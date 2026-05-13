@@ -1,0 +1,324 @@
+
+import pandas as pd
+import numpy as np
+from sklearn.preprocessing import MinMaxScaler
+df = pd.read_csv("C:/Users/swaya/Downloads/iris.csv")
+df
+df.head
+df.tail
+df.shape
+
+df.columns
+df.dtypes
+df.isnull()
+df.isnull().sum()
+df.describe()
+list(df['species'].unique())
+df['species']=df['species'].map({'setosa':1, 'versicolor':2, 'virginica':3})
+df
+df.index
+df.columns.values
+df.describe(include='all')
+
+#df = pd.get_dummies(df, columns=['species'])
+df
+print(df.columns.tolist())
+df['species']=df['species'].map({'setosa':0, 'virginica':1, 'versicolor':2})
+df
+sc = MinMaxScaler()
+df['petal_length'] = sc.fit_transform(df[['petal_length']])
+df
+Selection deleted
+df.dtypes
+df['species'] = df['species'].astype('category')
+
+df.dtypes
+Selection deleted
+df['species'] = df['species'].cat.codes
+df.dtypes
+
+-------------------------------------------------------------------------------------
+
+
+import pandas as pd
+import matplotlib.pyplot as plt
+import numpy as np
+df = pd.read_csv('C:/Users/swaya/Downloads/academic_data.csv')
+df
+df.isnull().sum()
+# df['SPOS'] = df['SPOS'].fillna(df['SPOS'].mean())
+# df['DSBDA'] = df['DSBDA'].fillna(df['DSBDA'].mean())
+# df['WT'] = df['WT'].fillna(df['WT'].median())
+df.dtypes
+df['DSBDA'] = pd.to_numeric(df['DSBDA'], errors='coerce')
+df['DA'] = pd.to_numeric(df['DA'], errors='coerce')
+df.dtypes
+df['SPOS'] = df['SPOS'].fillna(df['SPOS'].mean())
+df['DSBDA'] = df['DSBDA'].fillna(df['DSBDA'].mean())
+df['WT'] = df['WT'].fillna(df['WT'].median())
+df['DA'] = df['DA'].fillna(df['DA'].median())
+
+df.isnull().sum()
+Selection deleted
+cols = ['DSBDA', 'WT', 'DA', 'SPOS']
+for col in cols:
+    Q1 = df[col].quantile(0.25)
+    Q3 = df[col].quantile(0.75)
+    IQR = Q3-Q1
+
+    lower = Q1 - 1.5*IQR
+    upper = Q3+1.5*IQR
+
+    outliers = df[(df[col]<lower) | (df[col]>upper)]
+    print(outliers[[col]])
+Selection deleted
+cols = ['DSBDA', 'WT', 'DA', 'SPOS']
+for col in cols:
+    Q1 = df[col].quantile(0.25)
+    Q3 = df[col].quantile(0.75)
+    IQR = Q3-Q1
+
+    lower = Q1 - 1.5*IQR
+    upper = Q3+1.5*IQR
+
+    df[col] = np.where(df[col]>upper, upper, df[col])
+    df[col] = np.where(df[col]<lower, lower, df[col])
+df
+df['WT'].skew()
+df['WT_log']=np.log(df['WT'])
+df['WT_log'].skew()
+
+-----------------------------------------------------------------------
+
+
+import pandas as pd
+import numpy as np
+df = pd.read_csv('C:/Users/swaya/Downloads/iris.csv')
+df['species'] = df['species'].map({'setosa':0, 'virginica':1, 'versicolor':2})
+df.dtypes
+df.head()
+df.isnull().sum()
+df.describe()
+df.shape
+df.info()
+df.min()
+df.max()
+df.mean()
+df.median()
+df.mode()
+df.std()
+df.groupby('species')['sepal_length'].agg(['mean','median','min','max','std'])
+df2 = pd.read_csv('C:/Users/swaya/Downloads/iris.csv')
+def stats_summary(data):
+    return{
+        'Mean':data.mean(),
+        'STD dev': data.std(),
+        '25th percentile':data.quantile(0.25),
+        '50th percentile':data.quantile(0.5),
+        '75th percentile':data.quantile(0.75),
+    }
+for sp in df2['species'].unique():
+    print('\n stats for',sp)
+    print(stats_summary(df2[df2['species'] == sp]['petal_length']))
+df.var()
+
+sepal_length_groups = {}
+
+for species in df['species'].unique():
+    sepal_length_groups[species] = list(
+        df[df['species'] == species]['sepal_length'] 
+    )
+print(sepal_length_groups)
+grouped = df.groupby('species')
+for species, data in grouped:
+    print("Species: ")
+    print(data.describe())
+	
+-------------------------------------------------------------------------------------------
+
+
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import r2_score, mean_squared_error
+df = pd.read_csv('C:/Users/swaya/Downloads/housing.csv')
+x = df.drop('MEDV', axis=1)
+y = df['MEDV']
+x_train, x_test, y_train, y_test = train_test_split(x,y,test_size=0.2, random_state=42)
+model = LinearRegression()
+model.fit(x_train, y_train)
+y_pred = model.predict(x_test)
+
+result = pd.DataFrame({'Actual':y_test.values,
+                       'Predicted':y_pred})
+print(result)
+mse = mean_squared_error(y_test, y_pred)
+r2 = r2_score(y_test, y_pred)
+print(mse, r2)
+
+-------------------------------------------------------------------------------------------------------
+
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import confusion_matrix, accuracy_score, recall_score, precision_score
+from sklearn.preprocessing import StandardScaler
+df = pd.read_csv('C:/Users/swaya/Downloads/Social_Network_Ads.csv')
+df
+x = df[['Age', 'EstimatedSalary']]
+y = df['Purchased']
+x_train, x_test, y_train, y_test = train_test_split(x,y,test_size=0.25, random_state=0)
+sc = StandardScaler()
+x_train = sc.fit_transform(x_train)
+x_test = sc.transform(x_test)
+model = LogisticRegression()
+model.fit(x_train, y_train)
+y_pred = model.predict(x_test)
+result = pd.DataFrame({'Actual':y_test, 
+                       'Predicted':y_pred})
+print(result)
+cm = confusion_matrix(y_test, y_pred)
+print(cm)
+accuracy = accuracy_score(y_test, y_pred)
+error_rate = 1-accuracy
+precision = precision_score(y_test, y_pred)
+recall = recall_score(y_test, y_pred)
+
+print('Accuracy: ', accuracy)
+print('Error_rate: ', error_rate)
+print('Precision: ', precision)
+print('Recall: ',recall)
+
+-------------------------------------------------------------------------------------------------
+
+
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.naive_bayes import GaussianNB
+from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import confusion_matrix, accuracy_score, recall_score, precision_score
+Selection deleted
+df = pd.read_csv("C:/Users/swaya/Downloads/iris.csv")
+df
+x = df.drop('species', axis=1)
+y = df['species']
+x_train, x_test, y_train, y_test = train_test_split(x,y,test_size=0.2, random_state=42)
+model = GaussianNB()
+model.fit(x_train, y_train)
+y_pred = model.predict(x_test)
+cm = confusion_matrix(y_test, y_pred)
+print(cm)
+accuracy = accuracy_score(y_test, y_pred)
+error_rate = 1-accuracy
+precision = precision_score(y_test, y_pred, average='macro')
+recall = recall_score(y_test, y_pred, average='macro')
+
+print('Accuracy: ',accuracy)
+print('Error rate: ',error_rate)
+print('Precision : ',precision)
+print('Recall: ',recall)
+
+-------------------------------------------------------------------------------------------------
+
+import nltk
+download('punkt')
+download('stopwords')
+download('averaged_perceptron_tagger)
+download('wordnet')
+
+from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize
+from nltk.stem import WordNetLemmatizer, PorterStemmer
+from nltk import pos_tag
+from nltk.feature_extraction.text import TfidfVectorizer
+
+text = """ """
+tokens = word_tokenize(text)
+print(tokens)
+
+pos_tags = pos_tag(tokens)
+print(pos_tag)
+
+stop_words = set(stopwords.words('english'))
+new_tokens = [word for word in tokens if word.lower() not in stop_words and word.isalpha()]
+print(new_tokens)
+
+ps = PorterStemmer()
+stemmed_words = [ps.stem(word) for word in new_tokens]
+print(stemmed_words)
+
+lemmatizer = WordNetLemmatizer()
+lemmatized_words = [lemmatizer.lemmatize(word) for word in new_tokens]
+print(lemmatized_words)
+
+documents = []
+vectorizer = TfidfVectorizer() 
+tfidf_matrix = vectorizer.fit_transform(documents)
+print('Vocabulary: ', vectorizer.get_feature_names_out())
+print('TF-IDF matrix: ', tfidf_matrix.toarray())
+
+--------------------------------------------------------------------------------------------------
+
+import matplotlib.pyplot as plt
+import seaborn as sns
+import pandas as pd
+df = pd.read_csv("C:/Users/swaya/Downloads/Titanic-Dataset.csv")
+df
+sns.countplot(x='Survived', data=df)
+plt.title("Survival count")
+plt.show()
+sns.countplot(x="Sex", hue='Survived', data=df)
+plt.title("Survival by Gender")
+plt.show()
+sns.countplot(x="Pclass", hue='Survived', data=df)
+plt.title("Survival by Passenger class")
+plt.show()
+plt.hist(df['Fare'].dropna(), bins=20)
+plt.title("Fare distribution")
+plt.xlabel("Fare")
+plt.ylabel("Frequency")
+plt.show()
+
+--------------------------------------------------------------------------------------
+
+
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+df = pd.read_csv("C:/Users/swaya/Downloads/Titanic-Dataset.csv")
+df.head()
+df.isnull().sum()
+sns.boxplot(x='Sex', hue='Survived', y='Age', data=df)
+plt.title("Age distribution by Gender and Survival")
+plt.show()
+
+---------------------------------------------------------------------------------
+
+
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+df = pd.read_csv("C:/Users/swaya/Downloads/iris.csv")
+df.head()
+df.dtypes
+df.hist()
+plt.suptitle("Histogram of features")
+plt.show()
+sns.boxplot(data=df)
+plt.title("Boxplot of features")
+plt.show()
+
+---------------------------------------------------------------------
+
+object HelloWorld{
+  def main(args: Array[String]):Unit={
+    
+    var n = 4
+    var num = scala.io.StdIn.readInt()
+    if(num%2==0) println("Even")
+    else println("Odd")
+    
+  }
+}
+
+
